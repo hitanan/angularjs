@@ -1,0 +1,139 @@
+<html>
+  <head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+	
+    <script type="text/javascript">
+		google.charts.load("current", {packages:["corechart"]});
+		google.charts.setOnLoadCallback(function() {
+			angular.bootstrap(document.body, ['myApp']);
+		});
+		var app = angular.module('myApp', []);
+		app.controller('MyCtrl', function($scope) {
+		
+			// data will be populated by request to API using $http in augular, for demo using static value :D
+			$scope.projects = [ 
+				{	name: 'APA', 
+					details: { 
+						testExcution: [
+							<!-- ['Status', 'numbers of Test Excution'], -->
+							['Never Run',     78],
+							['Blocked',      90],
+							['Failed',  120],
+							['Passed', 30]
+						], defects: [
+							<!-- ['Status', 'numbers'], -->
+							['Closed',     78],
+							['Opended',      120],
+							['resolved',  30]
+						], testdesign: [
+							<!-- ['Task', 'numbers'], -->
+							['Design',     320],
+							['Ready',      450]
+						]
+					}			
+				}, {
+					name: 'UNICI',
+					details: { 
+						testExcution: [
+							<!-- ['Status', 'numbers of Test Excution'], -->
+							['Never Run',     43],
+							['Blocked',      20],
+							['Failed',  90],
+							['Passed', 35]
+						], defects: [
+							<!-- ['Status', 'numbers'], -->
+							['Closed',     13],
+							['Opended',      23],
+							['resolved',  15]
+						], testdesign: [
+							<!-- ['Task', 'numbers'], -->
+							['Design',     53],
+							['Ready',      56]
+						]
+					}	
+				}
+			];
+			
+			// When never user click, change currentProject model, for demo using the first one
+			$scope.currentProject =  $scope.projects[0];
+					
+			$scope.setCurrentProject = function(index){
+				$scope.currentProject = $scope.projects[index];
+			}
+				
+		});
+      app.directive('chart', function() {
+          return {
+            restrict: 'A',
+			scope: {
+				details: '=',
+				title: '@'
+			},
+            link: function($scope, $elm, $attr) {
+			
+				// waching when change Data to re-render
+				$scope.$watch('details', function(){
+					var data = new google.visualization.DataTable();
+					data.addColumn('string', 'Title');
+					data.addColumn('number', 'Count');
+					data.addRows($scope.details);
+				  
+					//var data = google.visualization.arrayToDataTable($scope.details);
+
+					var options = {
+						title: $scope.title,
+						is3D: true,
+					};
+					var chart = new google.visualization.PieChart($elm[0]);
+					chart.draw(data, options);
+				  
+					
+					<!-- Add details -->
+					var ths = '';
+					var tds = ''
+					angular.forEach($scope.details, function(v) {
+						ths += '<th>'+ v[0] +'</th>';
+						tds += '<td>'+ v[1] +'</td>';
+					});
+					
+					var detailsElem = '<table><tr>' + ths + '</tr><tr>' + tds + '</tr></table>';
+					
+					$elm.append(detailsElem);
+	
+				});
+				
+				
+				
+            }
+		}
+      });
+    
+  </script>
+
+  <body> 
+    <div ng-controller = 'MyCtrl'>
+		<div class="row">
+			<div class="col-md-3">
+			<h3>Browser Projects</h3>
+				<div class="list-group">
+					<a href="#"  class="list-group-item list-group-item-info"  ng-repeat="p in projects"  ng-click="setCurrentProject($index)">{{p.name}}</a>
+				</div>
+			</div>
+			<div class="col-md-9">
+			
+				<div class="row text-center"><h4>{{currentProject.name}}</h4></div>
+				<div class="row">
+					<div chart class="col-md-3 chart" details="currentProject.details.testExcution" title="Test Excution" style="width: 900px; height: 300px"></div>
+					<div chart class="col-md-3 chart" details="currentProject.details.defects" title="Defects" style="width: 900px; height: 300px"></div>
+					<div chart class="col-md-3 chart" details="currentProject.details.testdesign" title="Test Design" style="width: 900px; height: 300px"></div>
+				</div>
+			
+			</div>
+			
+		 </div>
+    </div>    
+  </body>
+  
+</html>
